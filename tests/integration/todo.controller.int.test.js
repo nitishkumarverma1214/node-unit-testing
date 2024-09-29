@@ -3,7 +3,7 @@ const app = require('../../app');
 const newTodo = require('../mock-data/new-todo.json')
 
 const endpoint = '/todos';
-let firstTodo;
+let firstTodo, todoId;
 describe(endpoint, function() {
     it('POST' + endpoint+'responds with json', async function() {
     const response = await  request(app)
@@ -15,6 +15,7 @@ describe(endpoint, function() {
     expect(response.body.title).toBe(newTodo.title);
     expect(response.body.done).toBe(newTodo.done);
     firstTodo = response.body;
+    todoId = response.body._id;
         // expect('Content-Type', /json/)
         
     });
@@ -42,6 +43,13 @@ describe(endpoint, function() {
     it(`GET ${endpoint}/:id id doesn't exisits`, async()=>{
         const response = await request(app).get(`${endpoint}/66f61c65a9e88eb597c86887`);
         expect(response.statusCode).toBe(404);
+    })
+    it(`PUT ${endpoint}/${todoId}`, async()=>{
+        const newTodo = {title: "PUT integration test", done: true};
+        const response = await request(app).put(`${endpoint}/${todoId}`).send(newTodo);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.title).toBe(newTodo.title);
+        expect(response.body.done).toBe(newTodo.done);
     })
   });
 

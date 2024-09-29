@@ -32,3 +32,20 @@ exports.getTodoById = async(req, res, next)=>{
         next(error)  
     }
 }
+exports.updateTodoById = async(req, res, next)=>{
+
+    try {
+        const id = req.params.id;
+        const  _id = new mongoose.Types.ObjectId(id)
+        const todo = await TodoModel.findByIdAndUpdate(_id, req.body, {
+            new: true,
+            useFindAndModify: false
+        });
+        if(!todo){
+            return res.status(404).json("document not found")
+        }
+        res.status(200).json(todo)
+    } catch (error) {   
+        next(error)  
+    }
+}
