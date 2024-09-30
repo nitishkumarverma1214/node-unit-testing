@@ -5,12 +5,18 @@ const newTodo = require('../mock-data/new-todo.json');
 const todoList = require('../mock-data/todo-list.json');
 const mongoose = require('mongoose')
 
-const requestId =  '66f8f20c7d7db2d8b5df79fc';
+const todoId =  '66f8b60d02bc4c12ffaf8f5d';
 
+// mock the individual functions
+/*
 TodoModel.create = jest.fn(); // help us to spy the function
 TodoModel.find = jest.fn();
 TodoModel.findById = jest.fn();
 TodoModel.findByIdAndUpdate = jest.fn();
+
+*/
+// Mock all the functions in a method
+jest.mock('../../model/todo.model')
 
 let req, res, next;
 beforeEach(()=>{
@@ -131,7 +137,7 @@ describe("TodoController.updateTodoById",()=>{
         expect(TodoModel.findByIdAndUpdate).toBeCalledWith(req.params.id,newTodo, {new: true, useFindAndModify: false})
     });
     it("should return a json response with status code 200", async()=>{
-        req.params.id= new mongoose.Types.ObjectId(requestId);
+        req.params.id= new mongoose.Types.ObjectId(todoId);
         req.body = newTodo;
         TodoModel.findByIdAndUpdate.mockReturnValue(newTodo)
         await TodoController.updateTodoById(req,res, next);
@@ -140,7 +146,7 @@ describe("TodoController.updateTodoById",()=>{
         expect(res._isEndCalled()).toBeTruthy();
     });
     it("should handle the error", async()=>{
-        req.params.id= new mongoose.Types.ObjectId(requestId);
+        req.params.id= new mongoose.Types.ObjectId(todoId);
         req.body = newTodo;
         const errorMessage = {message: "error"};
         const rejectedPromise = Promise.reject(errorMessage);
@@ -148,5 +154,43 @@ describe("TodoController.updateTodoById",()=>{
         await TodoController.updateTodoById(req,res, next);
         expect(next).toBeCalledWith(errorMessage)
 
+    })
+})
+
+describe("TodoController.deleteTodo",()=>{
+
+    it("should have a deleteTodoById function",()=>{
+        expect(typeof TodoController.deleteTodoById).toBe('function');
+    });
+    it("should call the findByIdAndDelete function", async()=>{
+        req.params.id = todoId;
+        const _id = new mongoose.Types.ObjectId(todoId);
+        await TodoController.deleteTodoById(req, res,next)
+        expect(TodoModel.findByIdAndDelete).toBeCalledWith(_id)
+    });
+    it("should return the json response with status code 200", async()=>{
+        req.params.id= new mongoose.Types.ObjectId(todoId);
+
+        TodoModel.findByIdAndDelete.mockReturnValue(newTodo)
+        await TodoController.deleteTodoById(req, res,next);
+        expect(res._getJSONData()).toStrictEqual(newTodo)
+        expect(res.statusCode).toBe(200);
+        expect(res._isEndCalled()).toBeTruthy();         
+    });
+    it("should handle the 404 status",async()=>{
+        req.params.id= new mongoose.Types.ObjectId("66f8b60d02bc4c12ffaf1f5d");
+
+        TodoModel.findByIdAndDelete.mockReturnValue(null)
+        await TodoController.deleteTodoById(req, res,next);
+        expect(res.statusCode).toBe(404);
+        expect(res._isEndCalled()).toBeTruthy();         
+
+    })
+    it("should handle the error", async()=>{
+        const errorMessage = {message: "error message"};
+        const rejectedPromise = Promise.reject(errorMessage);
+        TodoModel.findByIdAndDelete.mockReturnValue(rejectedPromise)
+        await TodoController.deleteTodoById(req, res,next);
+        expect(next).toBeCalledWith(errorMessage);
     })
 })

@@ -4,6 +4,9 @@ const newTodo = require('../mock-data/new-todo.json')
 
 const endpoint = '/todos';
 let firstTodo, todoId;
+const updatedTodo = {title: "PUT integration test", done: true};
+const nonExistingId = "66f61c65a9e88eb597c86887"
+
 describe(endpoint, function() {
     it('POST' + endpoint+'responds with json', async function() {
     const response = await  request(app)
@@ -41,16 +44,25 @@ describe(endpoint, function() {
         expect(response.body.done).toBe(firstTodo.done);
     })
     it(`GET ${endpoint}/:id id doesn't exisits`, async()=>{
-        const response = await request(app).get(`${endpoint}/66f61c65a9e88eb597c86887`);
+        const response = await request(app).get(`${endpoint}/${nonExistingId}`);
         expect(response.statusCode).toBe(404);
     })
     it(`PUT ${endpoint}/${todoId}`, async()=>{
-        const newTodo = {title: "PUT integration test", done: true};
-        const response = await request(app).put(`${endpoint}/${todoId}`).send(newTodo);
+        const response = await request(app).put(`${endpoint}/${todoId}`).send(updatedTodo);
         expect(response.statusCode).toBe(200);
-        expect(response.body.title).toBe(newTodo.title);
-        expect(response.body.done).toBe(newTodo.done);
-    })
+        expect(response.body.title).toBe(updatedTodo.title);
+        expect(response.body.done).toBe(updatedTodo.done);
+    });
+    it(`DELETE ${endpoint}/${todoId}`, async()=>{
+        const response = await request(app).delete(`${endpoint}/${todoId}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.title).toBe(updatedTodo.title);
+        expect(response.body.done).toBe(updatedTodo.done);
+    });
+    it(`DELETE ${endpoint}/${todoId} 404`, async()=>{
+        const response = await request(app).delete(`${endpoint}/${nonExistingId}`);
+        expect(response.statusCode).toBe(404);
+    });
   });
 
  

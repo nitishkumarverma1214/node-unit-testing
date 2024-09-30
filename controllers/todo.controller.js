@@ -49,3 +49,19 @@ exports.updateTodoById = async(req, res, next)=>{
         next(error)  
     }
 }
+
+exports.deleteTodoById = async(req, res, next)=>{
+
+    try{
+        const id = req.params.id;
+        const _id = new mongoose.Types.ObjectId(id);
+        const deletedTodo = await TodoModel.findByIdAndDelete(_id);
+        if(!deletedTodo){
+            res.status(404).send();
+        }else{
+            res.status(200).json(deletedTodo)
+        }
+    }catch(error){
+        next(error)
+    }
+}
